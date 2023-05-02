@@ -117,4 +117,4 @@ There should be enough available sockets and file descriptors for all possible p
 
 ## License
 
-This project is licensed under the terms of the [MIT](LICENSE) license.
+This project is licensed under the terms of the [MIT](LICENSE.md) license.
