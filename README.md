@@ -84,7 +84,7 @@ In the event JARL is unavailable or unresponsive, applications should fall back 
 
 ## Performance
 
-Non-scientific tests on a Windows machine using a debug build took a maximum of 1ms to calculate the delay float. The network performance was not measured extensively.
+Non-scientific tests on a Windows machine using a debug build took a maximum of 1μs to calculate the delay float. The network latency against loopback was ~232μs.
 
 JARL is not meant to be highly-available. It should also not be treated as a SPOF for an application, expecting to be ignored in the event of a malfunction.
 
@@ -108,7 +108,7 @@ The responsibility of delaying the requests to the target endpoint lies with the
 
 ### Memory & Runtime Requirements
 
-Most of the memory consumption will likely come from the deque. That should have a maximum equal to $\lceil{log _{2}(|requests|)}\rceil *8$ bytes, assuming the deque will keep the underlying array at the closest power of 2 size.
+Most of the memory consumption will likely come from the deque. That should have a maximum equal to $\lceil{log _{2}n}\rceil *8$ bytes, assuming the deque will keep the underlying array at the closest power of 2 size. $n$ is the maximum number of requests defined by the target rate limit.
 
 One should probably add the executable size to that.
 
