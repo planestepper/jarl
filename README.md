@@ -55,7 +55,7 @@ $ disown %1 %2
 
 ### Clients
 
-Clients should open a TCP socket to the host:port associated with the service to be called immediately before issuing the external/target API request. No data is expected to be sent to JARL. A minimum of 3 bytes will be returned by JARL (the string `0.0`) and a theoretical maximum of the string representation of the rate-limited period followed by two extra bytes (the string `.0`).
+Clients should open a TCP socket to the host:port associated with the service to be called immediately before issuing the external/target API request. No data is expected to be sent to JARL. A minimum of 3 bytes will be returned by JARL (the string `0.0`), and a theoretical maximum of 43 bytes (the string for `f32::MAX` followed by a period and three digits - `.000`).
 
 An example implementation of a Python client function:
 
@@ -92,6 +92,10 @@ JARL is not meant to be highly-available. It should also not be treated as a SPO
 
 The usual: `cargo build --release`
 
+## Testing
+
+Also the usual: `cargo test`
+
 
 ## How Does it Work?
 
@@ -108,7 +112,7 @@ The responsibility of delaying the requests to the target endpoint lies with the
 
 ### Memory & Runtime Requirements
 
-Most of the memory consumption will likely come from the deque. That should have a maximum equal to $\lceil{log _{2}n}\rceil *8$ bytes, assuming the deque will keep the underlying array at the closest power of 2 size. $n$ is the maximum number of requests defined by the target rate limit.
+Most of the memory consumption will likely come from the deque. That should have a maximum equal to $\lceil{log _{2} (n + 1)}\rceil *8$ bytes, assuming the deque will keep the underlying array at the closest power of 2 size. $n$ is the maximum number of requests defined by the target rate limit.
 
 One should probably add the executable size to that.
 
