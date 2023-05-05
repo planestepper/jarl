@@ -14,10 +14,13 @@ pub struct Keeper {
 impl Keeper {
     
     pub fn new(limit: u32, period: u32) -> Self {
+        assert!(limit > 0, "Max requests per period must be greater than 0.");
+        assert!(period > 0, "Period must be greater than 0.");
+
         Keeper {
             limit,
             period_in_secs: period as f64,
-            queue: BoundedVecDeque::new(limit as usize),
+            queue: BoundedVecDeque::new((limit + 1) as usize),
             backoff_count: 0.0,
             base_delay: (period as f32 / limit as f32).max(0.01),
         }
@@ -32,9 +35,10 @@ impl Keeper {
                              time_since_epoch.subsec_millis() as f64 * 0.001;
         self.queue.push_back(timestamp);
 
-        if self.queue.len() >= self.limit as usize {
+        if self.queue.len() == (self.limit + 1) as usize {
             let last = self.queue.pop_front().unwrap_or_default();
             let diff = timestamp - last;
+
 
             if diff < self.period_in_secs {
                 let adjustment = (self.period_in_secs - diff) as f32;
@@ -73,4 +77,82 @@ pub struct Cli {
     /// Port to bind to
     #[arg(long)]
     pub port: u32,
+}
+
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use std::thread::sleep;
+    use std::time::Duration;
+
+    use crate::Keeper;
+
+    #[test]
+    /// The base delay is the maximum value between the expected average time for each
+    /// request within the period (max requests / period) and 0.01.
+    fn base_delay_values() {
+        let keeper_1 = Keeper::new(1, 1);
+        assert_eq!(keeper_1.base_delay, 1.0);
+
+        let keeper_2 = Keeper::new(10, 1);
+        assert_eq!(keeper_2.base_delay, 0.1);
+
+        let keeper_3 = Keeper::new(10000, 1);
+        assert_eq!(keeper_3.base_delay, 0.01);
+    }
+
+    #[test]
+    #[should_panic]
+    fn reject_period_of_zero() {
+        let _keeper = Keeper::new(1, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn reject_max_zero_requests() {
+        let _keeper = Keeper::new(0, 1);
+    }
+
+    #[test]
+    /// Ensure functionality for one request per second scenario
+    fn minimum_rate() {
+        let mut keeper = Keeper::new(1, 1);
+
+        keeper.get_delay();
+        // Expect second request within a second to return some delay > 0
+        let delay_1 = keeper.get_delay();
+        assert!(delay_1 > 0.0, "Delay should be greater than 0.");
+
+        // By waiting the delay, Keeper should reset after a new get_delay call
+        sleep(Duration::from_millis((delay_1 * 1000.0) as u64));
+        let delay_2 = keeper.get_delay();
+        assert!(keeper.backoff_count == 0.0, "Backoff count should have reset.");
+
+        // After the reset, the delay returned should be 0
+        assert!(delay_2 == 0.0, "Delay should be 0 after a reset.");
+    }
+
+    #[test]
+    /// Ensure functionality for a more common scenario (requests > 1 and period > 1)
+    fn normal_rate() {
+        let mut keeper = Keeper::new(100, 5);
+
+        for _ in 0..100 {
+            assert!(keeper.get_delay() == 0.0, "Delay for requests within rate limit should be 0.");
+        }
+        // Expect 100th request within period to return some delay > 0
+        let delay_1 = keeper.get_delay();
+        assert!(delay_1 > 0.0, "Delay should be greater than 0.");
+
+        // By waiting the delay, Keeper should reset after a new get_delay call
+        sleep(Duration::from_millis((delay_1 * 1000.0) as u64));
+        let delay_2 = keeper.get_delay();
+        assert!(keeper.backoff_count == 0.0, "Backoff count should have reset.");
+
+        // After the reset, the delay returned should be 0
+        assert!(delay_2 == 0.0, "Delay should be 0 after a reset.");
+    }
+
+
 }
