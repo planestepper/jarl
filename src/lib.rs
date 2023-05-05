@@ -141,7 +141,7 @@ mod tests {
         for _ in 0..100 {
             assert!(keeper.get_delay() == 0.0, "Delay for requests within rate limit should be 0.");
         }
-        // Expect 100th request within period to return some delay > 0
+        // Expect 101st request within period to return some delay > 0
         let delay_1 = keeper.get_delay();
         assert!(delay_1 > 0.0, "Delay should be greater than 0.");
 
