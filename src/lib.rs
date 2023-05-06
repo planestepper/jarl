@@ -62,21 +62,26 @@ pub struct Cli {
     #[arg(long)]
     service: String,
     
-    /// Maximum number of requests to allow within the period
+    /// Maximum number of requests to allow within the period, with a minimum 
+    /// possible number of 1 request
     #[arg(long)]
+    #[arg(value_parser = clap::value_parser!(u32).range(1..))]
     pub requests: u32,
     
-    /// Period to enforce rate over, in seconds
+    /// Period to enforce rate over in seconds, with a minimum possible period
+    /// of 1 second
     #[arg(long)]
+    #[arg(value_parser = clap::value_parser!(u32).range(1..))]
     pub period: u32,
     
     /// IPv4 interface to bind to, normally 0.0.0.0
     #[arg(long)]
-    pub ip: String,
+    pub ip: std::net::IpAddr,
 
-    /// Port to bind to
+    /// Port to bind to, from 1 to 65535
     #[arg(long)]
-    pub port: u32,
+    #[arg(value_parser = clap::value_parser!(u16).range(1..))]
+    pub port: u16,
 }
 
 
