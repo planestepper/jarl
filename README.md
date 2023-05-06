@@ -32,14 +32,14 @@ Given that there are 5 workers handling the payment gateway-related messages and
 There are no configuration files or environment variables required. There is also no output expected from the application in its host, except in the event of a panic. The executable is a CLI program with the following interface:
 
 ```
-Usage: jarl --service <SERVICE> --period <PERIOD> --requests <REQUESTS> --ip <IP> --port <PORT>
+Usage: jarl.exe --service <SERVICE> --requests <REQUESTS> --period <PERIOD> --ip <IP> --port <PORT>
 
 Options:
       --service <SERVICE>    Name of the service to rate-limit, not used by the code, serving as a CLI reference only
-      --requests <REQUESTS>  Maximum number of requests to allow within the period
-      --period <PERIOD>      Period to enforce rate over, in seconds
-      --ip <IP>              IPv4 interface to bind to, normally 0.0.0.0
-      --port <PORT>          Port to bind to
+      --requests <REQUESTS>  Maximum number of requests to allow within the period, with a minimum possible number of 1 request
+      --period <PERIOD>      Period to enforce rate over in seconds, with a minimum possible period of 1 second
+      --ip <IP>              Network interface to bind to, normally 0.0.0.0
+      --port <PORT>          Port to bind to, from 1 to 65535
   -h, --help                 Print help
 ```
 

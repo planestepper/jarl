@@ -74,7 +74,7 @@ pub struct Cli {
     #[arg(value_parser = clap::value_parser!(u32).range(1..))]
     pub period: u32,
     
-    /// IPv4 interface to bind to, normally 0.0.0.0
+    /// Network interface to bind to, normally 0.0.0.0
     #[arg(long)]
     pub ip: std::net::IpAddr,
 
