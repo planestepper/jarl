@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 use clap::Parser;
 use jarl::{Cli, Keeper};
 
@@ -27,5 +31,5 @@ async fn main() {
 
 async fn handle_connection(mut stream: TcpStream, keeper: TimeKeeper) {
     let response = keeper.lock().unwrap().get_delay();
-    stream.write_all((format!("{:.3}", response)).as_bytes()).await.unwrap();
+    stream.write_all(format!("{:.3}", response).as_bytes()).await.unwrap();
 }
