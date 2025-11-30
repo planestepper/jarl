@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 use std::time::{SystemTime, UNIX_EPOCH};
 use ::bounded_vec_deque::BoundedVecDeque;
 use clap::Parser;
@@ -63,7 +67,7 @@ pub struct Cli {
     service: String,
     
     /// Maximum number of requests to allow within the period, with a minimum 
-    /// possible number of 1 request
+    /// possible number of 1
     #[arg(long)]
     #[arg(value_parser = clap::value_parser!(u32).range(1..))]
     pub requests: u32,
@@ -78,7 +82,7 @@ pub struct Cli {
     #[arg(long)]
     pub ip: std::net::IpAddr,
 
-    /// Port to bind to, from 1 to 65535
+    /// Port to bind to, from 1 to 65,535
     #[arg(long)]
     #[arg(value_parser = clap::value_parser!(u16).range(1..))]
     pub port: u16,
@@ -120,22 +124,22 @@ mod tests {
     }
 
     #[test]
-    /// Ensure functionality for one request per second scenario
+    /// Ensure functionality for the scenario of one request per second
     fn minimum_rate() {
         let mut keeper = Keeper::new(1, 1);
 
         keeper.get_delay();
-        // Expect second request within a second to return some delay > 0
+        // Expect a second request within a second to return some delay > 0
         let delay_1 = keeper.get_delay();
         assert!(delay_1 > 0.0, "Delay should be greater than 0.");
 
         // By waiting the delay, Keeper should reset after a new get_delay call
         sleep(Duration::from_millis((delay_1 * 1000.0) as u64));
         let delay_2 = keeper.get_delay();
-        assert!(keeper.backoff_count == 0.0, "Backoff count should have reset.");
+        assert_eq!(keeper.backoff_count, 0.0, "Backoff count should have reset.");
 
         // After the reset, the delay returned should be 0
-        assert!(delay_2 == 0.0, "Delay should be 0 after a reset.");
+        assert_eq!(delay_2, 0.0, "Delay should be 0 after a reset.");
     }
 
     #[test]
@@ -144,19 +148,19 @@ mod tests {
         let mut keeper = Keeper::new(100, 5);
 
         for _ in 0..100 {
-            assert!(keeper.get_delay() == 0.0, "Delay for requests within rate limit should be 0.");
+            assert_eq!(keeper.get_delay(), 0.0, "Delay for requests within rate limit should be 0.");
         }
-        // Expect 101st request within period to return some delay > 0
+        // Expect the 101st request within a period to return some delay > 0
         let delay_1 = keeper.get_delay();
         assert!(delay_1 > 0.0, "Delay should be greater than 0.");
 
         // By waiting the delay, Keeper should reset after a new get_delay call
         sleep(Duration::from_millis((delay_1 * 1000.0) as u64));
         let delay_2 = keeper.get_delay();
-        assert!(keeper.backoff_count == 0.0, "Backoff count should have reset.");
+        assert_eq!(keeper.backoff_count, 0.0, "Backoff count should have reset.");
 
         // After the reset, the delay returned should be 0
-        assert!(delay_2 == 0.0, "Delay should be 0 after a reset.");
+        assert_eq!(delay_2, 0.0, "Delay should be 0 after a reset.");
     }
 
 
